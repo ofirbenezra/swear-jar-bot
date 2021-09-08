@@ -5,3 +5,4 @@ sqaurejar-9f563bdd3ecc.json
 node_modules/
 
 .vscode/
+.env
