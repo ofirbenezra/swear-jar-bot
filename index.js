@@ -3,9 +3,11 @@ const { Client, Intents, ClientVoiceManager } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { token } = require('./config.json');
+const dotenv = require('dotenv');
 const profanityChecker = require('./profanity-checker');
 
+dotenv.config();
+const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Client({ 
    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
 });
