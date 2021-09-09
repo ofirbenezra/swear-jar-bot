@@ -10,6 +10,10 @@
   "engines": {
     "node": "16.x"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://git.heroku.com/swear-jar-bot.git"
+  },
   "author": "Ofir Ben Ezra",
   "license": "ISC",
   "dependencies": {
