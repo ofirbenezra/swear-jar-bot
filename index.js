@@ -7,7 +7,6 @@ const dotenv = require('dotenv');
 const profanityChecker = require('./profanity-checker');
 
 dotenv.config();
-
 const token = process.env.DISCORD_BOT_TOKEN;
 const client = new Client({ 
    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
