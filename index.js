@@ -48,7 +48,7 @@ client.on('messageCreate', (message) => {
    profanityChecker.checkProfanityInText(message.content).then(res => {
       if(res.indexOf('*') > -1){
          console.log('swear found. placing swear jar link');
-         message.reply('Profanity found. Please donate in this [link](https://streamelements.com/machitv/tip)');
+         message.reply('Profanity found. Please donate in here: https://streamelements.com/machitv/tip');
       }
    });
 })
