@@ -1,5 +1,5 @@
 // require('dotenv').config();
-const { Client, Intents, ClientVoiceManager } = require("discord.js");
+const { Client, Intents, ClientVoiceManager, MessageEmbed } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
@@ -16,16 +16,15 @@ const client = new Client({
 
 client.on('ready', () => {
    // List servers the bot is connected to
-   console.log("Servers:")
-   client.guilds.cache.forEach((guild) => {
-      console.log(" - " + guild.name + '' + guild.id)
+   // client.guilds.cache.forEach((guild) => {
+   //    console.log(" - " + guild.name + '' + guild.id)
 
 
-      // List all channels
-      guild.channels.cache.forEach((channel) => {
-         console.log(` -- ${channel.name} (${channel.type}) - ${channel.id}`)
-      })
-   })
+   //    // List all channels
+   //    guild.channels.cache.forEach((channel) => {
+   //       console.log(` -- ${channel.name} (${channel.type}) - ${channel.id}`)
+   //    })
+   // })
    // const Guilds = client.guilds.cache.map(guild => guild.id);
    //  console.log(Guilds);
 })
@@ -48,10 +47,11 @@ client.on('messageCreate', (message) => {
    profanityChecker.checkProfanityInText(message.content).then(res => {
       if(res.indexOf('*') > -1){
          console.log('swear found. placing swear jar link');
-         message.reply('Profanity found. Please donate in here: https://streamelements.com/machitv/tip');
+         message.reply(`Oops, #$?! Found. Would you like to donate to machitv's SwearJar? Link here: https://streamelements.com/machitv/tip`);
+         // const exampleEmbed = new MessageEmbed().setTitle('Oops, #$?! Found. Would you like to donate to machitv\'s SwearJar?');
+         // message.channel.send({ embeds: [exampleEmbed] });
       }
    });
 })
 
-console.log('before login');
 client.login(token);
