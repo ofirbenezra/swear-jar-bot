@@ -47,7 +47,7 @@ client.on('messageCreate', (message) => {
    profanityChecker.checkProfanityInText(message.content).then(res => {
       if(res.indexOf('*') > -1){
          console.log('swear found. placing swear jar link');
-         message.reply(`Oops, #$?! Found. Would you like to donate to machitv's SwearJar? Link here: https://streamelements.com/machitv/tip`);
+         message.reply(`Oops, #$@! Found. Would you like to donate to machitv's SwearJar? Click here: https://streamelements.com/machitv/tip`);
          // const exampleEmbed = new MessageEmbed().setTitle('Oops, #$?! Found. Would you like to donate to machitv\'s SwearJar?');
          // message.channel.send({ embeds: [exampleEmbed] });
       }
