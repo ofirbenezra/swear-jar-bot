@@ -9,13 +9,16 @@ const { donation_links } = require('./server-data.json');
 const { Console } = require("console");
 const { link } = require("fs");
 
+const NUM_OF_ALLOWED_SWEARS = 10;
 const messagesArray = [
    `Oops, #$@! Found. Would you like to donate to {serverName}'s SwearJar? <{link}>`,
    `Sensitive ears alert! How about a donation to {serverName}'s SwearJar? <{link}>`,
    `Toxins detected. Drop a $ to {serverName}'s SwearJar? <{link}>`,
    `Whoa Nelly, that's quite a mouth on you. Donate to {serverName}'s SwearJar? <{link}>`,
-   
+
 ]
+
+const usersDict = {};
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN;
 const botDisabled = process.env.DISABLE_BOT === 'false' ? false : true;
@@ -41,30 +44,46 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on('messageCreate', (message) => {
+   if (message.author.username === 'SwearJar') return;
    const donationObj = getServerNameAndDonationLink(message, client);
-   console.log(`*********Checking profanity on message '${message.content}', Server name: '${donationObj ?donationObj.serverName : 'not found'}'*******`);
-   if (botDisabled === false) {      
+   console.log(`*********Checking profanity on message '${message.content}', Server name: '${donationObj ? donationObj.serverName : 'not found'}'*******`);
+   if (botDisabled === false) {
       profanityChecker.checkProfanityInText(message.content).then(res => {
-         if(res) {
+         if (res) {
             const words = res.split(" ");
-            const isProfnaityWord = words.find(word => word.indexOf("*") === 0 && 
-                                    word.lastIndexOf("*") === word.length - 1);
-            if (isProfnaityWord && isProfnaityWord.length > 0 && donationObj) {
-               console.log('swear found. placing swear jar link');
-               let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
-               randomMessage = replaceTokenInMessage(donationObj, randomMessage);
-               message.reply(randomMessage);
+            const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
+               word.lastIndexOf("*") === word.length - 1);
+            if (isProfnaityWord && isProfnaityWord.length > 0&& donationObj) {
+               const userData = checkIfUserReachedLimit(message.author.username);
+               if (Number(userData.count % NUM_OF_ALLOWED_SWEARS)  !== 0) {
+                  message.reply(`${message.author.username} swear #${userData.count}`);
+               } else {
+                  console.log('swear found. placing swear jar link');
+                  let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
+                  randomMessage = replaceTokenInMessage(donationObj, randomMessage);
+                  message.reply(`${message.author.username} swear #${userData.count}\n${randomMessage}`);
+               }
             }
-         }         
+         }
       });
    }
 })
+
+function checkIfUserReachedLimit(userName) {
+   if (usersDict.hasOwnProperty(userName)) {
+      const userData = usersDict[userName];
+      userData.count++;
+   } else {
+      usersDict[userName] = { count: 1 };
+   }
+   return usersDict[userName];
+}
 
 function replaceTokenInMessage(donationObj, message) {
    const regex = /{[\w]*\}/g;
    let textTokens = message.match(regex);
 
-   if(textTokens.length > 0 && textTokens.length === 2) {
+   if (textTokens.length > 0 && textTokens.length === 2) {
       message = message.replace(textTokens[0], donationObj.serverName);
       message = message.replace(textTokens[1], donationObj.link);
    }
@@ -75,13 +94,13 @@ function getServerNameAndDonationLink(message, client) {
    let donationLinkObj;
    const serverName = client.guilds.cache.get(message.guild.id).name;
    console.log(`**** server name is: ${serverName}`);
-   if(serverName) {
+   if (serverName) {
       donationLinkObj = donation_links.find(x => x.serverName === serverName);
    }
-   if(donationLinkObj) {
+   if (donationLinkObj) {
       return donationLinkObj;
    }
-  return null;
+   return null;
 }
 
 client.login(token);
