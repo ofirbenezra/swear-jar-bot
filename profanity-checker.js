@@ -2,7 +2,7 @@
 var axios = require("axios").default;
 const addtionalWords = [
     'wtf', 'stfu', 'lmfao', 'af', 'roflmao', 
-    'bamf', 'fml', 'gtfo', 'omfg', 'pita'
+    'lmao', 'fml', 'gtfo', 'omfg', 'pita'
     // 'stfu', 'gtfo', 
     // 'atfo', 'cya', 'rtfm', 'dtf', 'snb', 'bfr', 'milf',
     // 'fyfi', 'mofo', 'mofos'
