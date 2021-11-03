@@ -2,27 +2,33 @@
     "donation_links": [
         {
             "serverName": "KillTheMageFirst!",
-            "link": "https://cash.app/$killthemagefirst"
+            "link": "https://cash.app/$killthemagefirst",
+            "swear_limit" : 5
         },
         {
             "serverName": "The Weeb Report",
-            "link": "https://cash.app/$hilalygawd"
+            "link": "https://cash.app/$hilalygawd",
+            "swear_limit" : 10
         },
         {
             "serverName": "▓ 𝕿𝖍𝖊 𝕵𝖚𝖓𝖌𝖑𝖊 𝕮𝖔𝖗𝖕 ▓",
-            "link": "https://streamelements.com/master_bit2310/tip"
+            "link": "https://streamelements.com/master_bit2310/tip",
+            "swear_limit" : 10
         },
         {
             "serverName": "Softens server",
-            "link": "https://streamlabs.com/softenlive/tip"
+            "link": "https://streamlabs.com/softenlive/tip",
+            "swear_limit" : 10
         },
         {
             "serverName": "The Apple Tree",
-            "link": "https://streamlabs.com/apples78/tip"
+            "link": "https://streamlabs.com/apples78/tip",
+            "swear_limit" : 10
         },
         {
             "serverName": "Ofir SJ Server",
-            "link": "https://streamlabs.com/softenlive/tip"
+            "link": "https://streamlabs.com/softenlive/tip",
+            "swear_limit" : 2
         }
     ]
 }

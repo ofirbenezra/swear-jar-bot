@@ -9,7 +9,6 @@ const { donation_links } = require('./server-data.json');
 const { Console } = require("console");
 const { link } = require("fs");
 
-const NUM_OF_ALLOWED_SWEARS = 10;
 const messagesArray = [
    `Oops, #$@! Found. Would you like to donate to {serverName}'s SwearJar? <{link}>`,
    `Sensitive ears alert! How about a donation to {serverName}'s SwearJar? <{link}>`,
@@ -53,23 +52,28 @@ client.on('messageCreate', (message) => {
             const words = res.split(" ");
             const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
                word.lastIndexOf("*") === word.length - 1);
-            const userData = checkIfUserReachedLimit(message.author.username);
 
-            if (isProfnaityWord && isProfnaityWord.length > 0) {
-               if (donationObj) {
-                  if (Number(userData.count % NUM_OF_ALLOWED_SWEARS) !== 0) {
-                     message.reply(`${message.author.username} swear #${userData.count}`);
+
+            message.guild.members.fetch(message.author.id).then(member => {
+               const userName = member.displayName ? member.displayName : message.author.username;
+               const userData = checkIfUserReachedLimit(userName);
+
+               if (isProfnaityWord && isProfnaityWord.length > 0) {
+                  if (donationObj) {
+                     if (Number(userData.count % donationObj.swear_limit) !== 0) {
+                        message.reply(`${userName} swear #${userData.count}`);
+                     } else {
+                        console.log('swear found. placing swear jar link');
+                        let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
+                        randomMessage = replaceTokenInMessage(donationObj, randomMessage);
+                        message.reply(`${userName} swear #${userData.count}\n${randomMessage}`);
+                     }
                   } else {
-                     console.log('swear found. placing swear jar link');
-                     let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
-                     randomMessage = replaceTokenInMessage(donationObj, randomMessage);
-                     message.reply(`${message.author.username} swear #${userData.count}\n${randomMessage}`);
+                     // server not found  - show default message
+                     message.reply(`${userName} swear #${userData.count}`);
                   }
-               } else {
-                  // server not found  - show default message
-                  message.reply(`${message.author.username} swear #${userData.count}`);
                }
-            }
+            })
          }
       });
    }
