@@ -56,9 +56,10 @@ client.on('messageCreate', (message) => {
 
             message.guild.members.fetch(message.author.id).then(member => {
                const userName = member.displayName ? member.displayName : message.author.username;
-               const userData = checkIfUserReachedLimit(userName);
+               const userData = getUserInfo(userName);
 
                if (isProfnaityWord && isProfnaityWord.length > 0) {
+                  userData.count++;
                   if (donationObj) {
                      if (Number(userData.count % donationObj.swear_limit) !== 0) {
                         message.reply(`${userName} swear #${userData.count}`);
@@ -79,12 +80,9 @@ client.on('messageCreate', (message) => {
    }
 })
 
-function checkIfUserReachedLimit(userName) {
-   if (usersDict.hasOwnProperty(userName)) {
-      const userData = usersDict[userName];
-      userData.count++;
-   } else {
-      usersDict[userName] = { count: 1 };
+function getUserInfo(userName) {
+   if (!usersDict.hasOwnProperty(userName)) {
+      usersDict[userName] = { count: 0 };
    }
    return usersDict[userName];
 }
