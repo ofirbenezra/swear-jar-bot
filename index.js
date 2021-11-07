@@ -45,9 +45,10 @@ client.on('interactionCreate', async interaction => {
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
    const donationObj = getServerNameAndDonationLink(message, client);
+   const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
    console.log(`*********Checking profanity on message '${message.content}', Server name: '${donationObj ? donationObj.serverName : 'not found'}'*******`);
    if (botDisabled === false) {
-      profanityChecker.checkProfanityInText(message.content).then(res => {
+      profanityChecker.checkProfanityInText(wordsForCheck).then(res => {
          if (res) {
             const words = res.split(" ");
             const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
