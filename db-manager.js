@@ -3,13 +3,16 @@ const { table } = require("console");
 const { resolve } = require("path/posix");
 const uuid = require('uuid');
 
+const config = {
+    apiVersion: "2010-12-01",
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID, 
+    accessSecretKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: "us-east-1"
+}
+
+const ddb = new DynamoDB(config)
 // Set the region 
-AWS.config.update(
-    { 
-        region: 'us-east-1',
-        accessKeyId: process.env.AWS_SECRET_KEY,
-        accessSecretKey: process.env.AWS_SECRET_KEY,
-     });
+AWS.config.update(config);
 
 // Create the DynamoDB service object
 // var db = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
