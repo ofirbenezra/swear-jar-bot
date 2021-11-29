@@ -7,7 +7,7 @@ const uuid = require('uuid');
 const config = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID, 
     accessSecretKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: "us-east-1"
+    region: "eu-central-1"
 }
 
 const ddb = new DynamoDB(config)
