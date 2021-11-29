@@ -29,6 +29,11 @@
             "serverName": "Ofir SJ Server",
             "link": "https://streamlabs.com/softenlive/tip",
             "swear_limit" : 2
+        },
+        {
+            "serverName": "ofir_be server2",
+            "link": "https://streamlabs.com/softenlive/tip",
+            "swear_limit" : 2
         }
     ]
 }

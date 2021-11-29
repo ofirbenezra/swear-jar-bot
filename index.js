@@ -8,6 +8,7 @@ const profanityChecker = require('./profanity-checker');
 const { donation_links } = require('./server-data.json');
 const { Console } = require("console");
 const { link } = require("fs");
+const dbManager = require('./db-manager');
 
 const messagesArray = [
    `Oops, #$@! Found. Would you like to donate to {serverName}'s SwearJar? <{link}>`,
@@ -42,6 +43,14 @@ client.on('interactionCreate', async interaction => {
    }
 });
 
+/* Emitted whenever a guild is deleted/left.
+*/
+client.on("guildDelete", function (guild) {
+   console.log(`the client deleted/left a guild`);
+   // dbManager.deleteUser()
+});
+
+
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
    const donationObj = getServerNameAndDonationLink(message, client);
@@ -56,24 +65,23 @@ client.on('messageCreate', (message) => {
 
 
             message.guild.members.fetch(message.author.id).then(member => {
-               const userName = member.displayName ? member.displayName : message.author.username;
-               const userData = getUserInfo(userName);
-
                if (isProfnaityWord && isProfnaityWord.length > 0) {
-                  userData.count++;
-                  if (donationObj) {
-                     if (Number(userData.count % donationObj.swear_limit) !== 0) {
-                        message.reply(`${userName} swear #${userData.count}`);
+                  const userName = member.displayName ? member.displayName : message.author.username;
+                  getUserInfo(message.author.id, message.guildId).then(userData => {
+                     if (donationObj) {
+                        if (Number(userData.swearCount % donationObj.swear_limit) !== 0) {
+                           message.reply(`${userName} swear #${userData.swearCount}`);
+                        } else {
+                           console.log('swear found. placing swear jar link');
+                           let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
+                           randomMessage = replaceTokenInMessage(donationObj, randomMessage);
+                           message.reply(`${userName} swear #${userData.swearCount}\n${randomMessage}`);
+                        }
                      } else {
-                        console.log('swear found. placing swear jar link');
-                        let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
-                        randomMessage = replaceTokenInMessage(donationObj, randomMessage);
-                        message.reply(`${userName} swear #${userData.count}\n${randomMessage}`);
+                        // server not found  - show default message
+                        message.reply(`${userName} swear #${userData.swearCount}`);
                      }
-                  } else {
-                     // server not found  - show default message
-                     message.reply(`${userName} swear #${userData.count}`);
-                  }
+                  });
                }
             })
          }
@@ -81,11 +89,16 @@ client.on('messageCreate', (message) => {
    }
 })
 
-function getUserInfo(userName) {
-   if (!usersDict.hasOwnProperty(userName)) {
-      usersDict[userName] = { count: 0 };
+async function getUserInfo(userId, serverId) {
+   let user;
+   user = await dbManager.getUser(userId);
+
+   if (Object.keys(user).length === 0) {
+      user = await dbManager.addUser(userId, serverId, 1);
+   } else {
+      user.swearCount =  await dbManager.updateUser(userId);
    }
-   return usersDict[userName];
+   return user;
 }
 
 function replaceTokenInMessage(donationObj, message) {
