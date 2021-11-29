@@ -1,3 +1,4 @@
+const { DynamoDB } = require("aws-sdk");
 const AWS = require("aws-sdk");
 const { table } = require("console");
 const { resolve } = require("path/posix");
