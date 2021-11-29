@@ -4,7 +4,12 @@ const { resolve } = require("path/posix");
 const uuid = require('uuid');
 
 // Set the region 
-AWS.config.update({ region: 'us-east-1' });
+AWS.config.update(
+    { 
+        region: 'us-east-1',
+        accessKeyId: process.env.AWS_SECRET_KEY,
+        accessSecretKey: process.env.AWS_SECRET_KEY,
+     });
 
 // Create the DynamoDB service object
 // var db = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
