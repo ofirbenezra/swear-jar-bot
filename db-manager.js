@@ -5,7 +5,6 @@ const { resolve } = require("path/posix");
 const uuid = require('uuid');
 
 const config = {
-    apiVersion: "2010-12-01",
     accessKeyId: process.env.AWS_ACCESS_KEY_ID, 
     accessSecretKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: "us-east-1"
