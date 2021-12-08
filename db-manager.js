@@ -94,7 +94,7 @@ const deleteUser = (userId, serverId) => {
         Key: {
             'id': userId,
         },
-        ConditionExpression:"userId = :userId, serverId = :serverId",
+        ConditionExpression:"userId = :userId AND serverId = :serverId",
         ExpressionAttributeValues: {
             ":userId": userId,
             ":serverId": serverId

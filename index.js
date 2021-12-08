@@ -24,7 +24,15 @@ const token = process.env.DISCORD_BOT_TOKEN;
 const botDisabled = process.env.DISABLE_BOT === 'false' ? false : true;
 console.log('Stating the Bot');
 const client = new Client({
-   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+   intents: [
+      Intents.FLAGS.GUILDS, 
+      Intents.FLAGS.GUILD_MESSAGES, 
+      Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+      Intents.FLAGS.GUILD_MEMBERS,
+      // Intents.FLAGS.GUILD_MEMBER_REMOVE,
+      Intents.FLAGS.GUILD_BANS,
+      // Intents.FLAGS.GUILD_BAN_REMOVE
+   ],
 });
 
 
@@ -47,7 +55,12 @@ client.on('interactionCreate', async interaction => {
 */
 client.on("guildDelete", function (guild) {
    console.log(`the client deleted/left a guild`);
-   // dbManager.deleteUser()
+   // dbManager.deleteUser(user.id, guild.id)
+});
+
+client.on("guildBanAdd", function(ban){
+   console.log(`a member is banned from a guild`);
+   dbManager.deleteUser(ban.user.id, ban.guild.id)
 });
 
 
