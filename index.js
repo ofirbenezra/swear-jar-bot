@@ -126,7 +126,7 @@ function replaceTokenInMessage(donationObj, message) {
 function getServerNameAndDonationLink(message, client) {
    let donationLinkObj;
    const serverName = client.guilds.cache.get(message.guild.id).name;
-   console.log(`**** server name is: ${serverName}`);
+   console.log(`**** getServerNameAndDonationLink -> server name is: ${serverName} message is:${message}`);
    if (serverName) {
       donationLinkObj = donation_links.find(x => x.serverName === serverName);
    }
