@@ -128,7 +128,7 @@ function getServerNameAndDonationLink(message, client) {
    const serverName = client.guilds.cache.get(message.guild.id).name;
    console.log(`**** getServerNameAndDonationLink -> server name is: ${serverName} message is:${message}`);
    if (serverName) {
-      donationLinkObj = donation_links.find(x => x.serverName.indexOf(serverName) > 0);
+      donationLinkObj = donation_links.find(x => serverName.indexOf(x.serverName) > 0);
    }
    if (donationLinkObj) {
       console.log(`**** getServerNameAndDonationLink -> found donation object: ${JSON.stringify(donationLinkObj)}`);
