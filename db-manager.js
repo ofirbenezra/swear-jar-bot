@@ -2,10 +2,10 @@ const { DynamoDB } = require("aws-sdk");
 const AWS = require("aws-sdk");
 const { table } = require("console");
 const { resolve } = require("path/posix");
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const config = {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID, 
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     accessSecretKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: "eu-central-1"
 }
@@ -17,11 +17,12 @@ AWS.config.update(config);
 // Create the DynamoDB service object
 // var db = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
 const docClient = new AWS.DynamoDB.DocumentClient()
-const tableName = "users";
+const usersTableName = "users";
+const swearsDicTableName = "swears_dict";
 
 const getUser = (key) => {
     const params = {
-        TableName: tableName,
+        TableName: usersTableName,
         Key: {
             'id': key
         }
@@ -33,7 +34,7 @@ const getUser = (key) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(data.hasOwnProperty('Item')? data.Item : data);
+                resolve(data.hasOwnProperty('Item') ? data.Item : data);
             }
         })
     })
@@ -41,12 +42,12 @@ const getUser = (key) => {
 
 const addUser = (userId, serverId, swearCount) => {
     const params = {
-        TableName: tableName,
+        TableName: usersTableName,
         Item: {
             'id': userId,
             'serverId': serverId,
             'createTimestamp': new Date().toISOString(),
-            'updateTimestamp':new Date().toISOString(),
+            'updateTimestamp': new Date().toISOString(),
             'swearCount': swearCount
         }
     };
@@ -65,20 +66,20 @@ const addUser = (userId, serverId, swearCount) => {
 
 const updateUser = (userId) => {
     const params = {
-        TableName: tableName,
+        TableName: usersTableName,
         Key: {
             'id': userId,
         },
         UpdateExpression: "set swearCount = swearCount + :val, updateTimestamp = :ts",
-        ExpressionAttributeValues:{
+        ExpressionAttributeValues: {
             ":val": 1,
             ":ts": new Date().toISOString()
         },
-        ReturnValues:"UPDATED_NEW"
+        ReturnValues: "UPDATED_NEW"
     };
 
     return new Promise((resolve, reject) => {
-        docClient.update(params, function(err, data) {
+        docClient.update(params, function (err, data) {
             if (err) {
                 reject(err);
             } else {
@@ -88,21 +89,21 @@ const updateUser = (userId) => {
     })
 }
 
-const deleteUser = (userId, serverId) => {
+const deleteServer = (serverId) => {
     const params = {
-        TableName: tableName,
+        TableName: usersTableName,
         Key: {
-            'id': userId,
+            'serverId': serverId,
         },
-        ConditionExpression:"userId = :userId AND serverId = :serverId",
+        ConditionExpression: "serverId = :serverId",
         ExpressionAttributeValues: {
-            ":userId": userId,
+            // ":userId": userId,
             ":serverId": serverId
         }
     };
 
     return new Promise((resolve, reject) => {
-        docClient.delete(params, function(err, data) {
+        docClient.delete(params, function (err, data) {
             if (err) {
                 reject(err);
             } else {
@@ -111,9 +112,52 @@ const deleteUser = (userId, serverId) => {
         });
     })
 }
+
+const addSwearsToDic = (dic) => {
+    const params = {
+        TableName: swearsDicTableName,
+        Item: {
+            'id': uuidv4(),
+            'swears': dic
+        }
+    };
+
+    return new Promise((resolve, reject) => {
+        docClient.put(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(params.Item);
+            }
+        });
+    })
+}
+
+const getSwearsDic = () => {
+    const params = {
+        TableName: swearsDicTableName,
+        Key: {
+            'id': 'bd2533cb-14fc-41e2-bf20-0a36f7c2d7ea'
+        }
+    };
+
+    // Call DynamoDB to read the item from the table
+    return new Promise((resolve, reject) => {
+        docClient.get(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.hasOwnProperty('Item') ? data.Item.swears : data);
+            }
+        })
+    })
+}
+
 module.exports = {
     addUser,
     getUser,
     updateUser,
-    deleteUser
+    deleteServer,
+    addSwearsToDic,
+    getSwearsDic
 }

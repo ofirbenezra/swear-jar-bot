@@ -25,8 +25,8 @@ const botDisabled = process.env.DISABLE_BOT === 'false' ? false : true;
 console.log('Stating the Bot');
 const client = new Client({
    intents: [
-      Intents.FLAGS.GUILDS, 
-      Intents.FLAGS.GUILD_MESSAGES, 
+      Intents.FLAGS.GUILDS,
+      Intents.FLAGS.GUILD_MESSAGES,
       Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
       // Intents.FLAGS.GUILD_MEMBERS,
       // Intents.FLAGS.GUILD_BANS
@@ -53,50 +53,50 @@ client.on('interactionCreate', async interaction => {
 */
 client.on("guildDelete", function (guild) {
    console.log(`the client deleted/left a guild`);
-   // dbManager.deleteUser(user.id, guild.id)
+   dbManager.deleteServer(guild.id)
 });
 
-client.on("guildBanAdd", function(ban){
+client.on("guildBanAdd", function (ban) {
    console.log(`a member is banned from a guild`);
-   dbManager.deleteUser(ban.user.id, ban.guild.id)
+   // dbManager.deleteUser(ban.user.id, ban.guild.id)
 });
 
 
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
    const donationObj = getServerNameAndDonationLink(message, client);
-   const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
    console.log(`*********Checking profanity on message '${message.content}', Server name: '${donationObj ? donationObj.serverName : 'not found'}'*******`);
    if (botDisabled === false) {
-      profanityChecker.checkProfanityInText(wordsForCheck).then(res => {
-         if (res) {
-            const words = res.split(" ");
-            const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
-               word.lastIndexOf("*") === word.length - 1);
+      // profanityChecker.checkProfanityInText(wordsForCheck).then(res => {
+      const foundSwear = profanityChecker.checkProfanityInText(message.content);
+      if (foundSwear) {
+         // const words = res.split(" ");
+         // const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
+         //    word.lastIndexOf("*") === word.length - 1);
 
 
-            message.guild.members.fetch(message.author.id).then(member => {
-               if (isProfnaityWord && isProfnaityWord.length > 0) {
-                  const userName = member.displayName ? member.displayName : message.author.username;
-                  getUserInfo(message.author.id, message.guildId).then(userData => {
-                     if (donationObj) {
-                        if (Number(userData.swearCount % donationObj.swear_limit) !== 0) {
-                           message.reply(`${userName} swear #${userData.swearCount}`);
-                        } else {
-                           console.log('swear found. placing swear jar link');
-                           let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
-                           randomMessage = replaceTokenInMessage(donationObj, randomMessage);
-                           message.reply(`${userName} swear #${userData.swearCount}\n${randomMessage}`);
-                        }
-                     } else {
-                        // server not found  - show default message
-                        message.reply(`${userName} swear #${userData.swearCount}`);
-                     }
-                  });
+         message.guild.members.fetch(message.author.id).then(member => {
+            // if (isProfnaityWord && isProfnaityWord.length > 0) {
+            const userName = member.displayName ? member.displayName : message.author.username;
+            getUserInfo(message.author.id, message.guildId).then(userData => {
+               if (donationObj) {
+                  if (Number(userData.swearCount % donationObj.swear_limit) !== 0) {
+                     message.reply(`${userName} swear #${userData.swearCount}`);
+                  } else {
+                     console.log('swear found. placing swear jar link');
+                     let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
+                     randomMessage = replaceTokenInMessage(donationObj, randomMessage);
+                     message.reply(`${userName} swear #${userData.swearCount}\n${randomMessage}`);
+                  }
+               } else {
+                  // server not found  - show default message
+                  message.reply(`${userName} swear #${userData.swearCount}`);
                }
-            })
-         }
-      });
+            });
+            // }
+         })
+      }
+      // });
    }
 })
 
@@ -107,7 +107,7 @@ async function getUserInfo(userId, serverId) {
    if (Object.keys(user).length === 0) {
       user = await dbManager.addUser(userId, serverId, 1);
    } else {
-      user.swearCount =  await dbManager.updateUser(userId);
+      user.swearCount = await dbManager.updateUser(userId);
    }
    return user;
 }
