@@ -37,6 +37,14 @@ const client = new Client({
 client.on('ready', () => {
    console.log('Server is ready');
    console.log(`Bot disbabled: ${botDisabled}`);
+   const guilds = client.guilds.cache.map(guild => {
+      return {id: guild.id, name: guild.name};
+   });
+   if(guilds.length > 0){
+      dbManager.addServersDetails(guilds).then((results) => {
+         console.log(`Guilds added to known servers: ${JSON.stringify(guilds)}`);
+      });
+   }
 })
 
 client.on('interactionCreate', async interaction => {
@@ -129,7 +137,6 @@ function getServerNameAndDonationLink(message, client) {
    console.log(`**** getServerNameAndDonationLink -> server name is: ${serverName} message is:${message}`);
    if (serverName) {
       donationLinkObj = donation_links.find(x => {
-         console.log(`**** getServerNameAndDonationLink -> server name: ${serverName}, server name from json ${x.serverName}`);
          return serverName.includes(x.serverName)
       });
    }
