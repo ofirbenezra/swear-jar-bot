@@ -149,10 +149,31 @@ const addServersDetails = (servers) => {
     return Promise.allSettled(promises);
 }
 
+const getServerInfo = (serverId) => {
+    const params = {
+        TableName: 'servers_info',
+        Key: {
+            'server_id': serverId
+        }
+    };
+
+    // Call DynamoDB to read the item from the table
+    return new Promise((resolve, reject) => {
+        docClient.get(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.hasOwnProperty('Item') ? data.Item : data);
+            }
+        })
+    })
+}
+
 module.exports = {
     addUser,
     getUser,
     updateUser,
     deleteUser,
-    addServersDetails
+    addServersDetails,
+    getServerInfo
 }
