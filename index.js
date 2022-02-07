@@ -22,9 +22,9 @@ const commands = [
 
 const rest = new REST({ version: '9' }).setToken(token);
 
-rest.put(Routes.applicationGuildCommands("905551224282185789", "889952003868999760"), { body: commands })
+rest.put(Routes.applicationCommands("905551224282185789"), { body: commands })
    .then(() => console.log('Successfully registered application commands.'))
-   .catch(`Error----> ${console.error}`);
+   .catch(`Error occured while registering slash commands----> ${console.error}`);
 
 const messagesArray = [
    `Oops, #$@! Found. Would you like to donate to {serverName}'s SwearJar? <{link}>`,
@@ -33,7 +33,6 @@ const messagesArray = [
    `Whoa Nelly, that's quite a mouth on you. Donate to {serverName}'s SwearJar? <{link}>`,
 ]
 
-const disabledChannels = {}; //dict key=>server, value=channel id array
 const usersDict = {};
 const botDisabled = process.env.DISABLE_BOT === 'false' ? false : true;
 console.log('Stating the Bot');
@@ -51,6 +50,7 @@ const client = new Client({
 client.on('ready', () => {
    console.log('Server is ready');
    console.log(`Bot disbabled: ${botDisabled}`);
+
    const guilds = client.guilds.cache.map(guild => {
       return { id: guild.id, name: guild.name };
    });
