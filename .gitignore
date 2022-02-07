@@ -1,6 +1,7 @@
 config.json
 sqaurejar-9f563bdd3ecc.json
 swear_jar.pem
+rootKey.csv
 
 # Dependency directories
 node_modules/

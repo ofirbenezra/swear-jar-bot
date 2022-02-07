@@ -22,10 +22,6 @@ const commands = [
 
 const rest = new REST({ version: '9' }).setToken(token);
 
-rest.put(Routes.applicationCommands("905551224282185789"), { body: commands })
-   .then(() => console.log('Successfully registered application commands.'))
-   .catch(`Error occured while registering slash commands----> ${console.error}`);
-
 const messagesArray = [
    `Oops, #$@! Found. Would you like to donate to {serverName}'s SwearJar? <{link}>`,
    `Sensitive ears alert! How about a donation to {serverName}'s SwearJar? <{link}>`,
@@ -55,6 +51,12 @@ client.on('ready', () => {
       return { id: guild.id, name: guild.name };
    });
    if (guilds.length > 0) {
+      guilds.forEach(guild => {
+         rest.put(Routes.applicationCommands("905551224282185789", guild.id), { body: commands })
+            .then(() => console.log(`Successfully registered application commands on guild ${guild.name}.`))
+            .catch(`Error occured while registering slash commands----> ${console.error}`);
+
+      })
       dbManager.addServersDetails(guilds).then((results) => {
          console.log(`Guilds added to known servers: ${JSON.stringify(guilds)}`);
       });
