@@ -169,11 +169,104 @@ const getServerInfo = (serverId) => {
     })
 }
 
+const setDisabledChannel = (serverId, channelId) => {
+    const params = {
+        TableName: 'disabled_channels',
+        Key: { 'server_id': serverId },
+        UpdateExpression: 'set #channelIds = list_append(if_not_exists(#channelIds, :empty_list), :channelId)',
+        ExpressionAttributeNames: {
+            '#channelIds': 'channelIds'
+        },
+        ExpressionAttributeValues: {
+            ':channelId': [channelId],
+            ':empty_list': []
+          }
+    };
+
+    return new Promise((resolve, reject) => {
+        docClient.update(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(params.Item);
+            }
+        });
+    })
+}
+
+const getDisabledChannels = (serverId) => {
+    const params = {
+        TableName: 'disabled_channels',
+        Key: {
+            'server_id': serverId
+        }
+    };
+
+    // Call DynamoDB to read the item from the table
+    return new Promise((resolve, reject) => {
+        docClient.get(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.hasOwnProperty('Item') ? data.Item : data);
+            }
+        })
+    })
+}
+
+const deleteDisabledChannel = (serverId, channelId) => {
+    const channels = '[' + Number.parseInt(channelId) + ']';
+    const params = {
+        TableName: 'disabled_channels',
+        Key: { 'server_id': serverId },
+        // UpdateExpression: `DELETE ${channels} :channel`,
+        UpdateExpression: `REMOVE channelIds[0]`,
+        // ExpressionAttributeValues: {
+        //     ':channel' : docClient.createSet(channelId)
+        // },
+    };
+
+    return new Promise((resolve, reject) => {
+        docClient.update(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(params.Item);
+            }
+        });
+    })
+}
+
+const updateDisabledChannels = (serverId, channels) => {
+    const params = {
+        TableName: 'disabled_channels',
+        Key: { 'server_id': serverId },
+        UpdateExpression: "set channelIds = :ids",
+        ExpressionAttributeValues:{
+            ":ids": channels
+        }
+    };
+
+    return new Promise((resolve, reject) => {
+        docClient.update(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(params.Item);
+            }
+        });
+    })
+}
+
 module.exports = {
     addUser,
     getUser,
     updateUser,
     deleteUser,
     addServersDetails,
-    getServerInfo
+    getServerInfo,
+    setDisabledChannel,
+    getDisabledChannels,
+    deleteDisabledChannel,
+    updateDisabledChannels
 }
