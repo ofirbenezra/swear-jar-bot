@@ -65,6 +65,7 @@ client.on('interactionCreate', async interaction => {
    if (!interaction.isCommand()) return;
 
    const { commandName } = interaction;
+   console.log(`***** interactionCreate --> command name: ${commandName}`);
 
    if (commandName === 'ping') {
       await interaction.reply('Pong!');
