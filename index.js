@@ -1,4 +1,3 @@
-// require('dotenv').config();
 const { Client, Intents, ClientVoiceManager, MessageEmbed, Permissions } = require("discord.js");
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { REST } = require('@discordjs/rest');
@@ -7,20 +6,39 @@ const dotenv = require('dotenv');
 const profanityChecker = require('./profanity-checker');
 const { donation_links } = require('./server-data.json');
 const { Console } = require("console");
-const { link } = require("fs");
+const fs = require('fs');
+const path = require('path');
 const dbManager = require('./db-manager');
+const config = require('./config.json');
 
 
 dotenv.config();
 const token = process.env.DISCORD_BOT_TOKEN;
 
-const commands = [
-   new SlashCommandBuilder().setName('ping').setDescription('Replies with pong!'),
-   new SlashCommandBuilder().setName('sj-here').setDescription('Enables SwearJar bot on current channel'),
-   new SlashCommandBuilder().setName('sj-not-here').setDescription('Disables SwearJar bot on current channel')
-].map(command => command.toJSON());
+let commands = new Map();
 
-const rest = new REST({ version: '9' }).setToken(token);
+fs.readdirSync(path.join(__dirname, 'commands')).forEach((f) => {
+   if(f.endsWith(".js")) {
+       let file = require(path.join(__dirname, 'commands', f));
+       commands.set(file.info.name, file);
+       console.log(`Registered command: ${file.info.name}`);
+   }
+});
+// const commands = [
+//    new SlashCommandBuilder().setName('ping').setDescription('Replies with pong!'),
+//    new SlashCommandBuilder().setName('sj-here').setDescription('Enables SwearJar bot on current channel'),
+//    // new SlashCommandBuilder().setName('sj-not-here').setDescription('Disables SwearJar bot on current channel')
+// ].map(command => command.toJSON());
+
+// const rest = new REST({ version: '9' }).setToken(token);
+// rest.put(Routes.applicationCommands("890247030507704330"), { body: commands })
+// .then(() => console.log(`Successfully registered application commands on guild`))
+// .catch(`Error occured while registering slash commands----> ${console.error}`);
+
+// rest.get(Routes.applicationGuildCommands("890247030507704330", "889952003868999760"))
+// .then((res) => console.log(res))
+// .catch(`Error occured while registering slash commands----> ${console.error}`);
+
 
 const messagesArray = [
    `Oops, #$@! Found. Would you like to donate to {serverName}'s SwearJar? <{link}>`,
@@ -51,12 +69,9 @@ client.on('ready', () => {
       return { id: guild.id, name: guild.name };
    });
    if (guilds.length > 0) {
-      guilds.forEach(guild => {
-         rest.put(Routes.applicationCommands("905551224282185789", guild.id), { body: commands })
-            .then(() => console.log(`Successfully registered application commands on guild ${guild.name}.`))
-            .catch(`Error occured while registering slash commands----> ${console.error}`);
-
-      })
+      // guilds.forEach(guild => {
+       
+      // })
       dbManager.addServersDetails(guilds).then((results) => {
          console.log(`Guilds added to known servers: ${JSON.stringify(guilds)}`);
       });
@@ -127,6 +142,10 @@ client.on('interactionCreate', async interaction => {
          await interaction.reply(`You must be an admin to use this command`);
       }
    }
+   
+   // else if(commandName === 'sj-help') {
+   //    await interaction.reply('SwearJar Bot Help <{link}>');
+   // }
 });
 
 /* Emitted whenever a guild is deleted/left.
@@ -144,6 +163,16 @@ client.on("guildBanAdd", function (ban) {
 
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
+
+   if(message.content.startsWith(config.prefix)) {
+      let command = message.content.split(" ")[1]; 
+      if(commands.has(command)) {
+          let cmd = commands.get(command)
+          if(typeof cmd.runner === "function") {
+              cmd.runner(message, client);
+          }
+      }
+   }
    const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
 
    shouldDisable(message.guildId, message.channelId).then(shouldDisableBot => {
