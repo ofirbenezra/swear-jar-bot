@@ -12,22 +12,11 @@ module.exports = {
         const msgEmbed = new MessageEmbed()
             .setColor('#0099ff')
             .setTitle('SwearJar Bot Help')
-            .setDescription(`This bot reacts to swears in your server and counts them up for individual users.\n
+            .setDescription(`This bot reacts to swears in your server and counts them up for individual users.
                              Use the prefix sj followed by the command name!\n
-                             sj-not-here - will disable the bot in a specific channel
-                             sj-here - will enable the bot in a specific channel\n
-                             [Invite Me](${inviteMeLink}) | [Support Server](${supportServerLink}) | [Vote for us!](${voteForUsLink})`)
-            .setThumbnail('https://i.imgur.com/6AWSGk0.png')
-            // .addFields(
-            //     { name: 'Regular field title', value: 'Some value here' },
-            //     { name: '\u200B', value: '\u200B' },
-            //     { name: 'Inline field title', value: 'Some value here', inline: true },
-            //     { name: 'Inline field title', value: 'Some value here', inline: true },
-            // )
-            // .addField('Inline field title', 'Some value here', true)
-            // .setImage('https://imgur.com/6AWSGk0')
-            // .setTimestamp()
-        // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+                             sj not-here - will disable the bot in a specific channel
+                             sj here - will enable the bot in a specific channel\n
+                             [Invite Me](${inviteMeLink}) | [Support Server](${supportServerLink}) | [Vote for us!](${voteForUsLink})`);        
         msg.channel.send({ embeds: [msgEmbed] });
     }
 }

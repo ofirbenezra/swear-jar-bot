@@ -164,7 +164,7 @@ client.on("guildBanAdd", function (ban) {
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
 
-   if(message.content.startsWith(config.prefix)) {
+   if(message.content.toLowerCase().startsWith(config.prefix)) {
       let command = message.content.split(" ")[1]; 
       if(commands.has(command)) {
           let cmd = commands.get(command)
@@ -172,6 +172,7 @@ client.on('messageCreate', (message) => {
               cmd.runner(message, client);
           }
       }
+      return;
    }
    const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
 
