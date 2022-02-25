@@ -1,6 +1,6 @@
 const { MessageEmbed } = require("discord.js");
 
-const inviteMeLink = 'https://discord.com/api/oauth2/authorize?client_id=890247030507704330&permissions=0&scope=bot%20applications.commands';
+const inviteMeLink = 'https://discord.com/api/oauth2/authorize?client_id=890247030507704330&permissions=0&scope=bot';
 const supportServerLink = 'https://discord.gg/5UKqGBM5';
 const voteForUsLink = 'https://top.gg/bot/890247030507704330';
 
