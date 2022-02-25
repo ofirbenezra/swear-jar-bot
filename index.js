@@ -87,65 +87,6 @@ client.on('interactionCreate', async interaction => {
    if (commandName === 'ping') {
       await interaction.reply('Pong!');
    }
-
-   else if (commandName === 'sj-here') {
-      if (interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-         const channelId = interaction.channel.id;
-         const channelName = interaction.channel.name;
-         try {
-            const res = await dbManager.getDisabledChannels(interaction.guildId);
-            if (res && res.channelIds && res.channelIds.length > 0) {
-               // const result =  await dbManager.deleteDisabledChannel(interaction.guildId, channelId);
-               const idx = res.channelIds.indexOf(channelId);
-               res.channelIds.splice(idx, 1);
-               const result = await dbManager.updateDisabledChannels(interaction.guildId, res.channelIds);
-               await interaction.reply(`SwearJar bot is now enabled in the ${channelName} channel`);
-            } else {
-               await interaction.reply(`SwearJar bot enablement failed on ${channelName} channel`);
-            }
-         }
-         catch (error) {
-            console.log(`Enablement of SwearJar bot failed. Error: ${error}`)
-            await interaction.reply(`Enablement of SwearJar bot failed on ${channelName} channel`);
-         }
-         // if(disabledChannels.hasOwnProperty(interaction.guildId)) {
-         //    const index = disabledChannels[interaction.guildId].indexOf(channelId);
-         //    if(index > -1){
-         //       disabledChannels[interaction.guildId].splice(index, 1);
-         //    }
-         // }
-         // await interaction.reply(`SwearJar bot is now enabled in the ${channelName} channel`);
-      } else {
-         await interaction.reply(`You must be an admin to use this command`);
-      }
-   }
-
-   else if (commandName === 'sj-not-here') {
-      if (interaction.member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
-         const channelId = interaction.channel.id;
-         const channelName = interaction.channel.name;
-         // if (disabledChannels.hasOwnProperty(interaction.guildId)) {
-         //    disabledChannels[interaction.guildId].push(channelId);
-         // } else {
-         //    disabledChannels[interaction.guildId] = [];
-         //    disabledChannels[interaction.guildId].push(channelId);
-         // }
-         try {
-            const result = await dbManager.setDisabledChannel(interaction.guildId, channelId);
-            await interaction.reply(`SwearJar bot is now disabled in the ${channelName} channel`);
-         }
-         catch (error) {
-            console.log(`Disablement of SwearJar bot failed. Error: ${error}`)
-            await interaction.reply(`Disablement of SwearJar bot failed on ${channelName} channel`);
-         }
-      } else {
-         await interaction.reply(`You must be an admin to use this command`);
-      }
-   }
-   
-   // else if(commandName === 'sj-help') {
-   //    await interaction.reply('SwearJar Bot Help <{link}>');
-   // }
 });
 
 /* Emitted whenever a guild is deleted/left.
@@ -165,7 +106,13 @@ client.on('messageCreate', (message) => {
    if (message.author.bot) return;
 
    if(message.content.toLowerCase().startsWith(config.prefix)) {
-      let command = message.content.split(" ")[1]; 
+      const commandParts = message.content.split(" ");
+      let command;
+      if(commandParts.length === 2){
+         command = commandParts[1];
+      } else if(commandParts.length === 3){
+         command = `${commandParts[1]} ${commandParts[2]}`
+      }
       if(commands.has(command)) {
           let cmd = commands.get(command)
           if(typeof cmd.runner === "function") {

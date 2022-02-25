@@ -9,14 +9,15 @@ module.exports = {
         name: "help"
     },
     runner(msg, bot) {
+
         const msgEmbed = new MessageEmbed()
             .setColor('#0099ff')
             .setTitle('SwearJar Bot Help')
-            .setDescription(`This bot reacts to swears in your server and counts them up for individual users.
-                             Use the prefix sj followed by the command name!\n
-                             sj not-here - will disable the bot in a specific channel
-                             sj here - will enable the bot in a specific channel\n
-                             [Invite Me](${inviteMeLink}) | [Support Server](${supportServerLink}) | [Vote for us!](${voteForUsLink})`);        
+            .addField(`This bot reacts to swears in your server and counts them up for individual users.`,
+                             "Use the prefix \`sj\` followed by the command name!\n\n" +                             
+                             "\`sj\` not here - will disable the bot in a specific channel\n" +
+                             "\`sj\` here - will enable the bot in a specific channel\n\n" +                             
+                             `[Invite Me](${inviteMeLink}) | [Support Server](${supportServerLink}) | [Vote for us!](${voteForUsLink})`);        
         msg.channel.send({ embeds: [msgEmbed] });
     }
 }
