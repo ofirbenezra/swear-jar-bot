@@ -14,7 +14,8 @@ module.exports = {
             .setColor('#0099ff')
             .setTitle('SwearJar Bot Help')
             .addField(`This bot reacts to swears in your server and counts them up for individual users.`,
-                             "Use the prefix \`sj\` followed by the command name!\n\n" +                             
+                             "Use the prefix \`sj\` followed by the command name!\n\n" +  
+                            //  "\`sj\` lead - displays leaderboard\n" +                            
                              "\`sj\` not here - disables the bot in a specific channel\n" +
                              "\`sj\` here - enables the bot in a specific channel\n\n" +                             
                              `[Invite Me](${inviteMeLink}) | [Support Server](${supportServerLink}) | [Vote for us!](${voteForUsLink})`);        

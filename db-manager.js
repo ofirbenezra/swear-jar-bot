@@ -17,13 +17,14 @@ AWS.config.update(config);
 // Create the DynamoDB service object
 // var db = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
 const docClient = new AWS.DynamoDB.DocumentClient()
-const tableName = "users";
+const tableName = "users_info";
 
-const getUser = (key) => {
+const getUser = (serverId, userId) => {
     const params = {
         TableName: tableName,
         Key: {
-            'id': key
+            'serverId': serverId,
+            'userId': userId
         }
     };
 
@@ -39,15 +40,41 @@ const getUser = (key) => {
     })
 }
 
-const addUser = (userId, serverId, swearCount) => {
+const getUsersByServerId = (serverId) => {
+    const params = {
+        TableName: tableName,
+        KeyConditionExpression: "#serverId = :serverId",
+        ExpressionAttributeValues: {
+            ":serverId": serverId
+        },
+        ExpressionAttributeNames: {
+            "#serverId": "serverId"
+        }
+    };
+
+    // Call DynamoDB to read the item from the table
+    return new Promise((resolve, reject) => {
+        docClient.query(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.hasOwnProperty('Items') ? data.Items : data);
+            }
+        })
+    })
+}
+
+const addUser = (userId, serverId, name, swearCount, swearsDic) => {
     const params = {
         TableName: tableName,
         Item: {
-            'id': userId,
+            'userId': userId,
             'serverId': serverId,
+            'userName': name,
             'createTimestamp': new Date().toISOString(),
             'updateTimestamp': new Date().toISOString(),
-            'swearCount': swearCount
+            'swearCount': swearCount,
+            swears: swearsDic
         }
     };
 
@@ -63,16 +90,33 @@ const addUser = (userId, serverId, swearCount) => {
 
 }
 
-const updateUser = (userId) => {
+const updateUser = (user, userName, swearsDic) => {
+    let newDict;
+    if (user.swears) {
+        Object.keys(swearsDic).forEach(s => {
+            if (user.swears.hasOwnProperty(s)) {
+                user.swears[s]++;
+            } else {
+                user.swears[s] = 1;
+            }
+        })
+        newDict = user.swears;
+    } else {
+        newDict = swearsDic;
+    }
+
     const params = {
         TableName: tableName,
         Key: {
-            'id': userId,
+            'serverId': user.serverId,
+            'userId': user.userId
         },
-        UpdateExpression: "set swearCount = swearCount + :val, updateTimestamp = :ts",
+        UpdateExpression: "set swearCount = swearCount + :val, updateTimestamp = :ts, swears = :swearsDic, userName = :userName",
         ExpressionAttributeValues: {
             ":val": 1,
-            ":ts": new Date().toISOString()
+            ":ts": new Date().toISOString(),
+            ":swearsDic": newDict,
+            ":userName": userName
         },
         ReturnValues: "UPDATED_NEW"
     };
@@ -88,28 +132,38 @@ const updateUser = (userId) => {
     })
 }
 
-const deleteUser = (userId, serverId) => {
-    const params = {
-        TableName: tableName,
-        Key: {
-            'id': userId,
-        },
-        ConditionExpression: "userId = :userId AND serverId = :serverId",
-        ExpressionAttributeValues: {
-            ":userId": userId,
-            ":serverId": serverId
-        }
-    };
+const deleteUser = (serverId) => {
 
-    return new Promise((resolve, reject) => {
-        docClient.delete(params, function (err, data) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(data);
-            }
-        });
+    getUsersByServerId(serverId).then(users => {
+        users.forEach(user => {
+            const params = {
+                TableName: tableName,
+                Key: {
+                    'serverId': user.serverId,
+                    'userId': user.userId
+                },
+                ConditionExpression: "serverId = :serverId AND userId = :userId",
+                ExpressionAttributeValues: {
+                    ":userId": user.userId,
+                    ":serverId": user.serverId
+                }
+            };
+
+            const promises = [];
+
+            promises.push(docClient.delete(params, function (err, data) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
+            }));
+            return Promise.allSettled(promises);
+        })
+
+
     })
+
 }
 
 const addServersDetails = (servers) => {
@@ -128,7 +182,7 @@ const addServersDetails = (servers) => {
                 // "id": uuidv4(),
                 "server_id": server.id,
                 "server_name": server.name,
-                "donation_link" : '',
+                "donation_link": '',
                 "swear_limit": 10
             },
             ConditionExpression: 'attribute_not_exists(server_id)'
@@ -137,9 +191,9 @@ const addServersDetails = (servers) => {
         promises.push(new Promise((resolve, reject) => {
             docClient.put(params, function (err, data) {
                 if (err) {
-                    if(err.code !== 'ConditionalCheckFailedException') {
+                    if (err.code !== 'ConditionalCheckFailedException') {
                         reject(err);
-                    }                  
+                    }
                 } else {
                     resolve(data);
                 }
@@ -180,7 +234,7 @@ const setDisabledChannel = (serverId, channelId) => {
         ExpressionAttributeValues: {
             ':channelId': [channelId],
             ':empty_list': []
-          }
+        }
     };
 
     return new Promise((resolve, reject) => {
@@ -242,7 +296,7 @@ const updateDisabledChannels = (serverId, channels) => {
         TableName: 'disabled_channels',
         Key: { 'server_id': serverId },
         UpdateExpression: "set channelIds = :ids",
-        ExpressionAttributeValues:{
+        ExpressionAttributeValues: {
             ":ids": channels
         }
     };
@@ -258,6 +312,23 @@ const updateDisabledChannels = (serverId, channels) => {
     })
 }
 
+const getLeaderBoard = (serverId) => {
+    return new Promise((resolve, reject) => {
+        const top5Users = [];
+        getUsersByServerId(serverId).then(users => {
+            const ordered = users.sort(({ swearCount: a }, { swearCount: b }) => b - a);
+            const res = [];
+            for (let index = 0; index < 5; index++) {
+                if(ordered[index]){
+                    res.push({userName: ordered[index].userName, swearCount: ordered[index].swearCount})
+                }
+            }
+            resolve(res);
+        })
+    })
+    
+}
+
 module.exports = {
     addUser,
     getUser,
@@ -268,5 +339,6 @@ module.exports = {
     setDisabledChannel,
     getDisabledChannels,
     deleteDisabledChannel,
-    updateDisabledChannels
+    updateDisabledChannels,
+    getLeaderBoard
 }

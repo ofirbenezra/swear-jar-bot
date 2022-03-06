@@ -93,7 +93,7 @@ client.on('interactionCreate', async interaction => {
 */
 client.on("guildDelete", function (guild) {
    console.log(`the client deleted/left a guild`);
-   // dbManager.deleteUser(user.id, guild.id)
+   dbManager.deleteUser(guild.id)
 });
 
 client.on("guildBanAdd", function (ban) {
@@ -105,22 +105,7 @@ client.on("guildBanAdd", function (ban) {
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
 
-   if(message.content.toLowerCase().startsWith(config.prefix)) {
-      const commandParts = message.content.split(" ");
-      let command;
-      if(commandParts.length === 2){
-         command = commandParts[1];
-      } else if(commandParts.length === 3){
-         command = `${commandParts[1]} ${commandParts[2]}`
-      }
-      if(commands.has(command)) {
-          let cmd = commands.get(command)
-          if(typeof cmd.runner === "function") {
-              cmd.runner(message, client);
-          }
-      }
-      return;
-   }
+   executeSjCommands(message);
    const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
 
    shouldDisable(message.guildId, message.channelId).then(shouldDisableBot => {
@@ -131,12 +116,25 @@ client.on('messageCreate', (message) => {
                   const words = res.split(" ");
                   const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
                      word.lastIndexOf("*") === word.length - 1);
-
+                  
+                  const swearsDic = {};
+                  wordsForCheck.split(" ").forEach((w, index) => {
+                     if (words[index].indexOf("*") === 0 &&
+                        words[index].lastIndexOf("*") === words[index].length - 1) {
+                        if (words[index].length === w.length) {
+                           if (swearsDic.hasOwnProperty(w)) {
+                              swearsDic[w]++;
+                           } else {
+                              swearsDic[w] = 1;
+                           }
+                        }
+                     }
+                  })
 
                   message.guild.members.fetch(message.author.id).then(member => {
                      if (isProfnaityWord && isProfnaityWord.length > 0) {
                         const userName = member.displayName ? member.displayName : message.author.username;
-                        getUserInfo(message.author.id, message.guildId).then(userData => {
+                        getUserInfo(message.author.id, message.guildId, userName, swearsDic).then(userData => {
                            if (serverInfoObj && serverInfoObj.donation_link) {
                               if (Number(userData.swearCount % serverInfoObj.swear_limit) !== 0) {
                                  message.reply(`${userName} swear #${userData.swearCount}`);
@@ -166,6 +164,29 @@ client.on('messageCreate', (message) => {
 
 })
 
+const executeSjCommands = (message) => {
+   if(message.content.toLowerCase().startsWith(config.prefix)) {
+      const commandParts = message.content.split(" ");
+      let command;
+      if(commandParts.length === 2){
+         command = commandParts[1];
+      } else if(commandParts.length === 3){
+         command = `${commandParts[1]} ${commandParts[2]}`
+      }
+      if(commands.has(command)) {
+          let cmd = commands.get(command)
+
+          //TEMP!!!
+          if(cmd.info.name !== 'lead'){
+            if(typeof cmd.runner === "function") {
+               cmd.runner(message, client);
+           }
+          }          
+      }
+      return;
+   }
+}
+
 const shouldDisable = async (serverId, channelId) => {
    if (botDisabled) {
       return true;
@@ -185,14 +206,14 @@ const shouldDisable = async (serverId, channelId) => {
    }
 }
 
-async function getUserInfo(userId, serverId) {
+async function getUserInfo(userId, serverId, userName, swearsDic) {
    let user;
-   user = await dbManager.getUser(userId);
+   user = await dbManager.getUser(serverId, userId);
 
    if (Object.keys(user).length === 0) {
-      user = await dbManager.addUser(userId, serverId, 1);
+      user = await dbManager.addUser(userId, serverId, userName, 1, swearsDic);
    } else {
-      user.swearCount = await dbManager.updateUser(userId);
+      user.swearCount = await dbManager.updateUser(user, userName, swearsDic);
    }
    return user;
 }
