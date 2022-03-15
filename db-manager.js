@@ -18,6 +18,7 @@ AWS.config.update(config);
 // var db = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
 const docClient = new AWS.DynamoDB.DocumentClient()
 const tableName = "users_info";
+const swearsDicTableName = "swears_dict";
 
 const getUser = (serverId, userId) => {
     const params = {
@@ -329,6 +330,26 @@ const getLeaderBoard = (serverId) => {
     
 }
 
+const getSwearsDic = () => {
+    const params = {
+        TableName: swearsDicTableName,
+        Key: {
+            'id': 'bd2533cb-14fc-41e2-bf20-0a36f7c2d7ea'
+        }
+    };
+
+    // Call DynamoDB to read the item from the table
+    return new Promise((resolve, reject) => {
+        docClient.get(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.hasOwnProperty('Item') ? data.Item.swears : data);
+            }
+        })
+    })
+}
+
 module.exports = {
     addUser,
     getUser,
@@ -340,5 +361,6 @@ module.exports = {
     getDisabledChannels,
     deleteDisabledChannel,
     updateDisabledChannels,
-    getLeaderBoard
+    getLeaderBoard,
+    getSwearsDic
 }

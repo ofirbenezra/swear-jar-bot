@@ -18,10 +18,10 @@ const token = process.env.DISCORD_BOT_TOKEN;
 let commands = new Map();
 
 fs.readdirSync(path.join(__dirname, 'commands')).forEach((f) => {
-   if(f.endsWith(".js")) {
-       let file = require(path.join(__dirname, 'commands', f));
-       commands.set(file.info.name, file);
-       console.log(`Registered command: ${file.info.name}`);
+   if (f.endsWith(".js")) {
+      let file = require(path.join(__dirname, 'commands', f));
+      commands.set(file.info.name, file);
+      console.log(`Registered command: ${file.info.name}`);
    }
 });
 // const commands = [
@@ -70,7 +70,7 @@ client.on('ready', () => {
    });
    if (guilds.length > 0) {
       // guilds.forEach(guild => {
-       
+
       // })
       dbManager.addServersDetails(guilds).then((results) => {
          console.log(`Guilds added to known servers: ${JSON.stringify(guilds)}`);
@@ -105,83 +105,83 @@ client.on("guildBanAdd", function (ban) {
 client.on('messageCreate', (message) => {
    if (message.author.bot) return;
 
-   executeSjCommands(message);
-   const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
+   try {
+      executeSjCommands(message);
+      const wordsForCheck = message.content.replace(new RegExp(/(\*+)/, "g"), "");
 
-   shouldDisable(message.guildId, message.channelId).then(shouldDisableBot => {
-      if (!shouldDisableBot) {
-         getServerNameAndDonationLink(message, client).then(serverInfoObj => {
-            profanityChecker.checkProfanityInText(wordsForCheck).then(res => {
-               if (res) {
-                  const words = res.split(" ");
-                  const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
-                     word.lastIndexOf("*") === word.length - 1);
-                  
+      shouldDisable(message.guildId, message.channelId).then(shouldDisableBot => {
+         if (!shouldDisableBot) {
+            getServerNameAndDonationLink(message, client).then(serverInfoObj => {
+               const swearArr = profanityChecker.checkProfanityInText(wordsForCheck);
+               if (swearArr.length > 0) {
+                  const words = wordsForCheck.trim().split(" ");
+                  // const isProfnaityWord = words.find(word => word.indexOf("*") === 0 &&
+                  //    word.lastIndexOf("*") === word.length - 1);
+
                   const swearsDic = {};
-                  wordsForCheck.split(" ").forEach((w, index) => {
-                     if (words[index].indexOf("*") === 0 &&
-                        words[index].lastIndexOf("*") === words[index].length - 1) {
-                        if (words[index].length === w.length) {
-                           if (swearsDic.hasOwnProperty(w)) {
-                              swearsDic[w]++;
-                           } else {
-                              swearsDic[w] = 1;
-                           }
+                  words.forEach((w, index) => {
+                     // if (words[index].indexOf("*") === 0 &&
+                     //    words[index].lastIndexOf("*") === words[index].length - 1) {
+                     if (w !== '' && swearArr.includes(w)) {
+                        if (swearsDic.hasOwnProperty(w)) {
+                           swearsDic[w]++;
+                        } else {
+                           swearsDic[w] = 1;
                         }
                      }
+                     // }
                   })
 
                   message.guild.members.fetch(message.author.id).then(member => {
-                     if (isProfnaityWord && isProfnaityWord.length > 0) {
-                        const userName = member.displayName ? member.displayName : message.author.username;
-                        getUserInfo(message.author.id, message.guildId, userName, swearsDic).then(userData => {
-                           if (serverInfoObj && serverInfoObj.donation_link) {
-                              if (Number(userData.swearCount % serverInfoObj.swear_limit) !== 0) {
-                                 message.reply(`${userName} swear #${userData.swearCount}`);
-                              } else {
-                                 console.log('swear found. placing swear jar link');
-                                 let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
-                                 randomMessage = replaceTokenInMessage(serverInfoObj, randomMessage);
-                                 message.reply(`${userName} swear #${userData.swearCount}\n${randomMessage}`);
-                              }
-                           } else {
-                              // server not found  - show default message
-                              console.log('Server name and donation link not found')
+                     // if (isProfnaityWord && isProfnaityWord.length > 0) {
+                     const userName = member.displayName ? member.displayName : message.author.username;
+                     getUserInfo(message.author.id, message.guildId, userName, swearsDic).then(userData => {
+                        if (serverInfoObj && serverInfoObj.donation_link) {
+                           if (Number(userData.swearCount % serverInfoObj.swear_limit) !== 0) {
                               message.reply(`${userName} swear #${userData.swearCount}`);
+                           } else {
+                              console.log('swear found. placing swear jar link');
+                              let randomMessage = messagesArray[Math.floor(Math.random() * messagesArray.length)];
+                              randomMessage = replaceTokenInMessage(serverInfoObj, randomMessage);
+                              message.reply(`${userName} swear #${userData.swearCount}\n${randomMessage}`);
                            }
-                        });
-                     }
+                        } else {
+                           // server not found  - show default message
+                           console.log('Server name and donation link not found')
+                           message.reply(`${userName} swear #${userData.swearCount}`);
+                        }
+                     });
+                     // }
                   })
                }
             });
-         });
-      } else {
-         console.log("Bot is disabled");
-      }
-   }).catch(error => {
+         } else {
+            console.log("Bot is disabled");
+         }
+      }).catch(error => {
+         console.log(`Error occured in messageCreate ${error}`);
+      })
+   }
+   catch (error) {
       console.log(`Error occured in messageCreate ${error}`);
-   })
+   }
 
 })
 
 const executeSjCommands = (message) => {
-   if(message.content.toLowerCase().startsWith(config.prefix)) {
+   if (message.content.toLowerCase().startsWith(config.prefix)) {
       const commandParts = message.content.split(" ");
       let command;
-      if(commandParts.length === 2){
+      if (commandParts.length === 2) {
          command = commandParts[1];
-      } else if(commandParts.length === 3){
+      } else if (commandParts.length === 3) {
          command = `${commandParts[1]} ${commandParts[2]}`
       }
-      if(commands.has(command)) {
-          let cmd = commands.get(command)
-
-          //TEMP!!!
-          if(cmd.info.name !== 'lead'){
-            if(typeof cmd.runner === "function") {
-               cmd.runner(message, client);
-           }
-          }          
+      if (commands.has(command)) {
+         let cmd = commands.get(command)
+         if (typeof cmd.runner === "function") {
+            cmd.runner(message, client);
+         }         
       }
       return;
    }
