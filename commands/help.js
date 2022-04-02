@@ -1,7 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 
 const inviteMeLink = 'https://discord.com/api/oauth2/authorize?client_id=890247030507704330&permissions=0&scope=bot';
-const supportServerLink = 'https://discord.gg/gmAdPMKJ';
+const supportServerLink = 'https://discord.gg/bc5byR5U';
 const voteForUsLink = 'https://top.gg/bot/890247030507704330';
 
 module.exports = {
