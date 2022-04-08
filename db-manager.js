@@ -320,14 +320,14 @@ const getLeaderBoard = (serverId) => {
             const ordered = users.sort(({ swearCount: a }, { swearCount: b }) => b - a);
             const res = [];
             for (let index = 0; index < 5; index++) {
-                if(ordered[index]){
-                    res.push({userName: ordered[index].userName, swearCount: ordered[index].swearCount})
+                if (ordered[index]) {
+                    res.push({ userName: ordered[index].userName, swearCount: ordered[index].swearCount })
                 }
             }
             resolve(res);
         })
     })
-    
+
 }
 
 const getSwearsDic = () => {
@@ -350,6 +350,50 @@ const getSwearsDic = () => {
     })
 }
 
+const getUserProfile = (serverId, userId) => {
+    const params = {
+        TableName: 'users_info',
+        Key: {
+            'serverId': serverId,
+            'userId': userId
+        }
+    };
+
+    // Call DynamoDB to read the item from the table
+    return new Promise((resolve, reject) => {
+        docClient.get(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.hasOwnProperty('Item') ? data.Item : data);
+            }
+        })
+    })
+}
+
+const resetUserSwears = (serverId, userId) => {
+    const params = {
+        TableName: tableName,
+        Key: {
+            'serverId': serverId,
+            'userId': userId
+        },
+        UpdateExpression: "set swearCount = :newCount ,swears = :newSwearsObj",
+        ExpressionAttributeValues: {
+            ":newCount": 0,
+            ":newSwearsObj": {}
+        }
+    };
+    return new Promise((resolve, reject) => {
+        docClient.update(params, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    })
+}
 module.exports = {
     addUser,
     getUser,
@@ -362,5 +406,7 @@ module.exports = {
     deleteDisabledChannel,
     updateDisabledChannels,
     getLeaderBoard,
-    getSwearsDic
+    getSwearsDic,
+    getUserProfile,
+    resetUserSwears
 }
