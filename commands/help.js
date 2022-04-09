@@ -17,7 +17,7 @@ module.exports = {
                              "Use the prefix \`sj\` followed by the command name!\n\n" +  
                              "\`sj\` lead - displays leaderboard\n" +                            
                              "\`sj\` not here - disables the bot in a specific channel\n" +
-                             "\`sj\` here - enables the bot in a specific channel\n\n" +       
+                             "\`sj\` here - enables the bot in a specific channel\n" +       
                              "\`sj\` reset - will reset the count for user\n\n" +                        
                              `[Invite Me](${inviteMeLink}) | [Support Server](${supportServerLink}) | [Vote for us!](${voteForUsLink})`);        
         msg.channel.send({ embeds: [msgEmbed] });
