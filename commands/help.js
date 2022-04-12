@@ -15,6 +15,7 @@ module.exports = {
             .setTitle('SwearJar Bot Help')
             .addField(`This bot reacts to swears in your server and counts them up for individual users.`,
                              "Use the prefix \`sj\` followed by the command name!\n\n" +  
+                             "\`sj\` profile - displays user profile\n" +
                              "\`sj\` lead - displays leaderboard\n" +                            
                              "\`sj\` not here - disables the bot in a specific channel\n" +
                              "\`sj\` here - enables the bot in a specific channel\n" +       

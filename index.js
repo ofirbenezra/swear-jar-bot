@@ -120,16 +120,14 @@ client.on('messageCreate', (message) => {
 
                   const swearsDic = {};
                   words.forEach((w, index) => {
-                     // if (words[index].indexOf("*") === 0 &&
-                     //    words[index].lastIndexOf("*") === words[index].length - 1) {
-                     if (w !== '' && swearArr.includes(w)) {
-                        if (swearsDic.hasOwnProperty(w)) {
-                           swearsDic[w]++;
+                     const word = w.toLowerCase();
+                     if (word !== '' && swearArr.includes(word)) {
+                        if (swearsDic.hasOwnProperty(word)) {
+                           swearsDic[wordw]++;
                         } else {
-                           swearsDic[w] = 1;
+                           swearsDic[word] = 1;
                         }
                      }
-                     // }
                   })
 
                   message.guild.members.fetch(message.author.id).then(member => {
